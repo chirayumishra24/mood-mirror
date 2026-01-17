@@ -1,41 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Mood Mirror</title>
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
 
-<h1>🪞 Mood Mirror</h1>
+  <header>
+  <h1>🪞 Mood Mirror</h1>
+  <p>Real-time emotion reflection</p>
 
-<div class="grid">
-
-  <!-- CAMERA BOX -->
-  <div class="box camera">
-    <img src="http://127.0.0.1:5000/video" />
+  <div class="top-controls">
+    <span id="face-indicator" class="face no-face">No Face</span>
+    <button id="fullscreen-btn">⛶ Fullscreen</button>
   </div>
+</header>
 
-  <!-- MOOD BOX -->
-  <div class="box mood">
-    <h2>Mood</h2>
-    <p id="emotion">Detecting...</p>
-    <p id="mood">—</p>
-  </div>
 
-  <!-- SUGGESTION BOX -->
-  <div class="box suggestion">
-    <h2>Suggestion</h2>
-    <p id="suggestion">—</p>
-  </div>
+  <main class="dashboard">
 
-  <!-- JOKE BOX -->
-  <div class="box joke">
-    <h2>Joke</h2>
-    <p id="joke">—</p>
-  </div>
+    <!-- Camera -->
+    <section class="card camera">
+      <img src="http://127.0.0.1:5000/video" alt="Live Camera" />
+    </section>
 
-</div>
+    <!-- Mood -->
+    <section class="card mood">
+      <h2>😊 Mood</h2>
+      <p id="emotion" class="emotion">Detecting…</p>
+      <p id="mood" class="mood-text">—</p>
 
-<script src="./scripts.js"></script>
+      <div class="confidence">
+        <div id="confidence-bar"></div>
+      </div>
+    </section>
+
+    <!-- Suggestion -->
+    <section class="card suggestion" id="suggestion-box">
+      <h2>💡 Suggestion</h2>
+      <p id="suggestion">All good 🙂</p>
+    </section>
+
+    <!-- Joke -->
+    <section class="card joke">
+      <h2>😂 Joke</h2>
+      <p id="joke">—</p>
+    </section>
+
+  </main>
+
+  <footer>
+    <small>⚠️ Not a medical or psychological diagnosis</small>
+  </footer>
+
+  <script src="./scripts.js"></script>
 </body>
 </html>
