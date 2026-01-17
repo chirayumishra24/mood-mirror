@@ -1,0 +1,26 @@
+# 🪞 Mood Mirror
+
+A real-time emotion detection system that analyzes live camera input to detect user mood and provide mood-based suggestions and jokes through a chatbot-style interface.
+
+## 🚀 Features
+- Live camera feed (Webcam / GlideX supported)
+- Real-time emotion detection using DeepFace
+- Mood classification with confidence-based smoothing
+- Mood-based suggestions for negative emotions
+- Fun jokes that refresh on emotion change
+- Flask backend with MJPEG video streaming
+- Chatbot-style frontend UI
+
+## 🛠 Tech Stack
+- Python
+- Flask
+- OpenCV
+- DeepFace
+- HTML, CSS, JavaScript
+
+## ▶️ How to Run
+```bash
+python -m venv venv
+source venv/Scripts/activate
+pip install -r requirements.txt
+python backend.py
