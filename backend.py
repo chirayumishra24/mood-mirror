@@ -1,30 +1,17 @@
-# ==============================
-# WINDOWS + OPENCV FIX
-# ==============================
 import os
 os.environ["OPENCV_VIDEOIO_PRIORITY_MSMF"] = "0"
 
-# ==============================
-# IMPORTS
-# ==============================
 from flask import Flask, jsonify, Response
 from flask_cors import CORS
 import cv2
 from deepface import DeepFace
 from collections import deque
-import threading
-import time
-import random
+import threading, time, random
 
-# ==============================
-# FLASK APP
-# ==============================
 app = Flask(__name__)
 CORS(app)
 
-# ==============================
-# SHARED STATE
-# ==============================
+# ---- State ----
 current_data = {
     "emotion": "Detecting...",
     "mood": "Unknown",
@@ -48,80 +35,53 @@ MOOD_MAP = {
 
 NEGATIVE = ["sad", "angry", "fear", "disgust"]
 
-# ==============================
-# SIMPLE SUGGESTIONS + JOKES
-# ==============================
-
 SUGGESTIONS = {
-    "sad": "Take a deep breath and step outside for a minute 🌿",
-    "angry": "Pause for 10 seconds and unclench your jaw 🧘",
-    "fear": "Slow breathing helps — you’re safe right now 💙",
-    "disgust": "Maybe a short break or some water would help 💧"
+    "sad": "Take a deep breath and step outside 🌿",
+    "angry": "Pause for 10 seconds and relax 🧘",
+    "fear": "Slow breathing helps — you’re safe 💙",
+    "disgust": "A short break or water may help 💧"
 }
 
 JOKES = [
-    "Why don’t computers ever get tired? They take power naps ⚡😄",
-    "I told my code a joke… it didn’t laugh, but it executed 😂",
-    "Why was the laptop calm? It had good cache control 😎",
-    "Even WiFi disconnects sometimes — it’s okay 😄"
+    "Why don’t computers get tired? Power naps ⚡😄",
+    "My code laughed… then crashed 😂",
+    "Laptop stayed calm — good cache control 😎",
+    "Even WiFi disconnects sometimes 😄"
 ]
 
-# ==============================
-# CAMERA DISCOVERY (WEBCAM + GLIDEX)
-# ==============================
-
+# ---- Camera ----
 def get_camera():
-    # Try DirectShow first (most stable on Windows)
-    for idx in range(5):
-        cap = cv2.VideoCapture(idx, cv2.CAP_DSHOW)
-        if cap.isOpened():
-            print(f"✅ Camera opened with DSHOW at index {idx}")
-            return cap
-
-    # Fallback
-    for idx in range(5):
-        cap = cv2.VideoCapture(idx, cv2.CAP_ANY)
-        if cap.isOpened():
-            print(f"✅ Camera opened with CAP_ANY at index {idx}")
-            return cap
-
+    for i in range(5):
+        cam = cv2.VideoCapture(i, cv2.CAP_DSHOW)
+        if cam.isOpened():
+            print(f"✅ Camera opened (DSHOW {i})")
+            return cam
+    for i in range(5):
+        cam = cv2.VideoCapture(i)
+        if cam.isOpened():
+            print(f"✅ Camera opened (AUTO {i})")
+            return cam
     return None
-
 
 cap = get_camera()
 if cap is None:
-    print("❌ No webcam found (laptop or GlideX)")
+    print("❌ No camera found")
     exit()
 
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
-# ==============================
-# CAMERA FRAME GENERATOR (LIVE VIEW)
-# ==============================
-
+# ---- Video stream ----
 def generate_frames():
     while True:
         ret, frame = cap.read()
         if not ret:
             continue
+        frame = cv2.flip(cv2.resize(frame, (640, 480)), 1)
+        _, buf = cv2.imencode(".jpg", frame)
+        yield b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buf.tobytes() + b"\r\n"
 
-        frame = cv2.resize(frame, (640, 480))
-        frame = cv2.flip(frame, 1)
-
-        _, buffer = cv2.imencode(".jpg", frame)
-        frame_bytes = buffer.tobytes()
-
-        yield (
-            b"--frame\r\n"
-            b"Content-Type: image/jpeg\r\n\r\n" +
-            frame_bytes + b"\r\n"
-        )
-
-# ==============================
-# CAMERA LOOP (EMOTION ANALYSIS)
-# ==============================
-
+# ---- Emotion loop ----
 def camera_loop():
     global frame_count, current_data, last_emotion
 
@@ -131,81 +91,60 @@ def camera_loop():
             time.sleep(0.1)
             continue
 
-        frame = cv2.resize(frame, (640, 480))
-        frame = cv2.flip(frame, 1)
-
+        frame = cv2.flip(cv2.resize(frame, (640, 480)), 1)
         frame_count += 1
-        if frame_count % 15 != 0:
-            time.sleep(0.05)
+
+        if frame_count % 10 != 0:
+            time.sleep(0.03)
             continue
 
         try:
+            small = cv2.resize(frame, (320, 240))
             result = DeepFace.analyze(
-                frame,
+                small,
                 actions=["emotion"],
                 enforce_detection=False
             )
 
-            emotion = result[0]["dominant_emotion"]
+            emotions = result[0]["emotion"]
+            emotion, confidence = max(emotions.items(), key=lambda x: x[1])
+            if confidence < 50:
+                raise Exception
+
             emotion_history.append(emotion)
+            stable = max(set(emotion_history), key=emotion_history.count)
 
-            stable_emotion = max(
-                set(emotion_history),
-                key=emotion_history.count
-            )
-
-            # New person / emotion change → new joke
-            if stable_emotion != last_emotion:
+            if stable != last_emotion:
                 joke = random.choice(JOKES)
-                last_emotion = stable_emotion
+                last_emotion = stable
             else:
                 joke = current_data["joke"]
 
             current_data = {
-                "emotion": stable_emotion,
-                "mood": MOOD_MAP.get(stable_emotion, "Unknown"),
-                "suggestion": (
-                    SUGGESTIONS.get(stable_emotion, "")
-                    if stable_emotion in NEGATIVE else ""
-                ),
+                "emotion": stable,
+                "mood": MOOD_MAP.get(stable, "Unknown"),
+                "suggestion": SUGGESTIONS.get(stable, "") if stable in NEGATIVE else "",
                 "joke": joke
             }
 
         except:
-            current_data = {
-                "emotion": "No face detected",
-                "mood": "Unknown",
-                "suggestion": "",
-                "joke": ""
-            }
+            current_data["emotion"] = "Detecting..."
+            current_data["mood"] = "Unknown"
+            current_data["suggestion"] = ""
 
         time.sleep(0.2)
 
-# ==============================
-# API ENDPOINTS
-# ==============================
-
+# ---- API ----
 @app.route("/mood")
 def mood():
     return jsonify(current_data)
 
 @app.route("/video")
 def video():
-    return Response(
-        generate_frames(),
-        mimetype="multipart/x-mixed-replace; boundary=frame"
-    )
+    return Response(generate_frames(),
+        mimetype="multipart/x-mixed-replace; boundary=frame")
 
-# ==============================
-# START BACKEND
-# ==============================
-
+# ---- Start ----
 if __name__ == "__main__":
     threading.Thread(target=camera_loop, daemon=True).start()
-
-    app.run(
-        host="127.0.0.1",
-        port=5000,
-        debug=False,
-        use_reloader=False
-    )
+    app.run(host="127.0.0.1", port=5000, debug=False, use_reloader=False)
