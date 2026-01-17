@@ -1,36 +1,139 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: Arial, sans-serif;
-  background: #0f172a;
-  color: white;
+  margin: 0;
+  font-family: "Inter", system-ui, sans-serif;
+  background: linear-gradient(135deg, #020617, #020617);
+  color: #e5e7eb;
+  transition: background 0.5s ease;
+}
+
+header {
   text-align: center;
-}
-
-h1 {
-  margin: 20px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
   padding: 20px;
 }
 
-.box {
-  background: #1e293b;
-  border-radius: 12px;
-  padding: 15px;
+header h1 {
+  margin: 0;
+  font-size: 2.4rem;
+}
+
+header p {
+  opacity: 0.7;
+}
+
+.top-controls {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.face {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.face.detected {
+  background: #22c55e;
+  color: #022c22;
+}
+
+.face.no-face {
+  background: #ef4444;
+  color: #450a0a;
+}
+
+#fullscreen-btn {
+  background: rgba(255,255,255,0.1);
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 20px;
+  padding: 20px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  animation: fadeIn 0.6s ease;
 }
 
 .camera img {
   width: 100%;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
-.mood p {
-  font-size: 1.4em;
+.mood .emotion {
+  font-size: 1.8rem;
+  margin: 10px 0 0;
 }
 
-.suggestion, .joke {
-  font-size: 1.1em;
+.mood-text {
+  font-size: 1.2rem;
+  opacity: 0.85;
+}
+
+.confidence {
+  height: 8px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 8px;
+  margin-top: 12px;
+  overflow: hidden;
+}
+
+#confidence-bar {
+  height: 100%;
+  width: 0%;
+  transition: width 0.4s ease;
+}
+
+.joke {
+  grid-column: span 2;
+  font-size: 1.3rem;
+  min-height: 60px;
+}
+
+footer {
+  text-align: center;
+  padding: 16px;
+  opacity: 0.5;
+}
+
+/* 🔁 Emotion themes */
+body.happy { background: linear-gradient(135deg, #022c22, #064e3b); }
+body.sad { background: linear-gradient(135deg, #020617, #1e293b); }
+body.angry { background: linear-gradient(135deg, #450a0a, #7f1d1d); }
+body.fear { background: linear-gradient(135deg, #312e81, #1e1b4b); }
+body.neutral { background: linear-gradient(135deg, #020617, #020617); }
+
+/* 📱 Mobile responsive */
+@media (max-width: 768px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+  .joke {
+    grid-column: span 1;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
