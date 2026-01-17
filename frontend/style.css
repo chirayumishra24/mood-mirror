@@ -1,0 +1,36 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+  text-align: center;
+}
+
+h1 {
+  margin: 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 20px;
+}
+
+.box {
+  background: #1e293b;
+  border-radius: 12px;
+  padding: 15px;
+}
+
+.camera img {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.mood p {
+  font-size: 1.4em;
+}
+
+.suggestion, .joke {
+  font-size: 1.1em;
+}

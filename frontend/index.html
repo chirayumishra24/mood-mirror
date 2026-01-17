@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mood Mirror</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<h1>🪞 Mood Mirror</h1>
+
+<div class="grid">
+
+  <!-- CAMERA BOX -->
+  <div class="box camera">
+    <img src="http://127.0.0.1:5000/video" />
+  </div>
+
+  <!-- MOOD BOX -->
+  <div class="box mood">
+    <h2>Mood</h2>
+    <p id="emotion">Detecting...</p>
+    <p id="mood">—</p>
+  </div>
+
+  <!-- SUGGESTION BOX -->
+  <div class="box suggestion">
+    <h2>Suggestion</h2>
+    <p id="suggestion">—</p>
+  </div>
+
+  <!-- JOKE BOX -->
+  <div class="box joke">
+    <h2>Joke</h2>
+    <p id="joke">—</p>
+  </div>
+
+</div>
+
+<script src="./scripts.js"></script>
+</body>
+</html>
