@@ -5,6 +5,7 @@ const body = document.body;
 const jokeEl = document.getElementById("joke");
 const faceIndicator = document.getElementById("face-indicator");
 const fullscreenBtn = document.getElementById("fullscreen-btn");
+const cameraBox = document.querySelector(".camera");
 
 function typeText(element, text) {
   clearInterval(typingInterval);
@@ -21,46 +22,58 @@ function typeText(element, text) {
 }
 
 async function updateUI() {
-  const res = await fetch("http://127.0.0.1:5000/mood");
-  const data = await res.json();
+  try {
+    const res = await fetch("http://127.0.0.1:5000/mood");
+    const data = await res.json();
 
-  document.getElementById("emotion").innerText = data.emotion;
-  document.getElementById("mood").innerText = data.mood;
+    document.getElementById("emotion").innerText = data.emotion;
+    document.getElementById("mood").innerText = data.mood;
 
-  // Face indicator
-  if (data.emotion === "Detecting..." || data.emotion === "No face detected") {
-    faceIndicator.innerText = "No Face";
-    faceIndicator.className = "face no-face";
-  } else {
-    faceIndicator.innerText = "Face Detected";
-    faceIndicator.className = "face detected";
-  }
+    /* ---- Face detection indicator + robotic scan ---- */
+    if (data.face_detected) {
+      faceIndicator.innerText = "Face Detected";
+      faceIndicator.className = "face detected";
+      cameraBox.classList.add("scan-active");
+    } else {
+      faceIndicator.innerText = "No Face";
+      faceIndicator.className = "face no-face";
+      cameraBox.classList.remove("scan-active");
+    }
 
-  // Emotion theme
-  body.className = "";
-  body.classList.add(data.emotion || "neutral");
+    /* ---- Emotion-based theme ---- */
+    body.className = "";
+    body.classList.add(data.emotion || "neutral");
 
-  // Confidence bar
-  const confidence = data.emotion === "happy" ? 85 : 65;
-  document.getElementById("confidence-bar").style.width = confidence + "%";
+    /* ---- Confidence bar (UX only) ---- */
+    const confidence =
+      data.emotion === "happy" ? 85 :
+      data.emotion === "neutral" ? 70 :
+      65;
 
-  // Suggestion
-  const suggestionBox = document.getElementById("suggestion-box");
-  if (data.suggestion) {
-    suggestionBox.style.display = "block";
-    document.getElementById("suggestion").innerText = data.suggestion;
-  } else {
-    suggestionBox.style.display = "none";
-  }
+    document.getElementById("confidence-bar").style.width =
+      confidence + "%";
 
-  // Joke typing animation on emotion change
-  if (data.emotion !== lastEmotion && data.joke) {
-    typeText(jokeEl, data.joke);
-    lastEmotion = data.emotion;
+    /* ---- Suggestions ---- */
+    const suggestionBox = document.getElementById("suggestion-box");
+    if (data.suggestion) {
+      suggestionBox.style.display = "block";
+      document.getElementById("suggestion").innerText = data.suggestion;
+    } else {
+      suggestionBox.style.display = "none";
+    }
+
+    /* ---- Joke typing animation (only on emotion change) ---- */
+    if (data.emotion !== lastEmotion && data.joke) {
+      typeText(jokeEl, data.joke);
+      lastEmotion = data.emotion;
+    }
+
+  } catch (err) {
+    console.error("UI update failed:", err);
   }
 }
 
-// Fullscreen (kiosk mode)
+/* ---- Fullscreen (kiosk mode) ---- */
 fullscreenBtn.onclick = () => {
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen();
@@ -69,4 +82,5 @@ fullscreenBtn.onclick = () => {
   }
 };
 
+/* ---- Poll backend every 2 seconds ---- */
 setInterval(updateUI, 2000);

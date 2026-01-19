@@ -137,3 +137,16 @@ body.neutral { background: linear-gradient(135deg, #020617, #020617); }
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+.scan-active {
+  border: 2px solid #38bdf8;
+  box-shadow: 0 0 20px #38bdf8;
+  animation: scan 1.5s infinite linear;
+}
+
+@keyframes scan {
+  0% { box-shadow: 0 0 5px #38bdf8; }
+  50% { box-shadow: 0 0 25px #38bdf8; }
+  100% { box-shadow: 0 0 5px #38bdf8; }
+}
+
